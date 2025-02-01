@@ -1,26 +1,49 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import webviewContent from './webviewContent';
+import ollama from 'ollama';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+	console.log('extension is active');
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "deepseek-vscode-extension" is now active!');
+	const disposable = vscode.commands.registerCommand('deepseek-vscode-extension.start', () => {
+		const panel = vscode.window.createWebviewPanel(
+			'deepseek chat',
+			'Deepseek Chat',
+			vscode.ViewColumn.One,
+			{
+				enableScripts: true
+			}
+		);
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('deepseek-vscode-extension.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from deepseek-vscode-extension!');
+		panel.webview.html = webviewContent();
+		panel.webview.onDidReceiveMessage(async (message) => {
+			if (message.command === 'chat') {
+				const prompt = message.text;
+				let responseText = '';
+
+				try {
+					const streamResponse = await ollama.chat({
+						model: 'deepseek-r1:1.5b',
+						messages: [{ role: 'user', content: prompt }],
+						stream: true
+					});
+					for await (const response of streamResponse) {
+						responseText += response.message.content;
+						panel.webview.postMessage({ command: 'response', text: responseText });
+					}
+				} catch (e) {
+					if (e instanceof Error) {
+						vscode.window.showErrorMessage(e.message);
+					}
+					vscode.window.showErrorMessage("An error occured!");
+				}
+			}
+		});
 	});
 
 	context.subscriptions.push(disposable);
 }
-
-// This method is called when your extension is deactivated
-export function deactivate() {}

@@ -1,7 +1,9 @@
 {
   "name": "deepseek-vscode-extension",
+  "publisher": "RazvanBalota",
+  "license": "MIT",
   "displayName": "deepseek-vscode-extension",
-  "description": "",
+  "description": "A minimal VS Code extension to chat with Deepseek",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.96.0"
@@ -11,11 +13,15 @@
   ],
   "activationEvents": [],
   "main": "./dist/extension.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RazvanBalota/deepseek-vscode-extension"
+  },
   "contributes": {
     "commands": [
       {
-        "command": "deepseek-vscode-extension.helloWorld",
-        "title": "Hello World"
+        "command": "deepseek-vscode-extension.start",
+        "title": "Chat with Deepseek"
       }
     ]
   },
